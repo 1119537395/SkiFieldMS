@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fish.business.dao.FieldDao">
+
+  <!-- 实体映射 -->
+  <resultMap id="BaseResultMap" type="com.fish.business.domain.Field">
+    <id column="field_id" jdbcType="INTEGER" property="fieldId" />
+    <result column="field_road" jdbcType="VARCHAR" property="fieldRoad" />
+    <result column="field_grade" jdbcType="VARCHAR" property="fieldGrade" />
+    <result column="field_session" jdbcType="VARCHAR" property="fieldSession" />
+    <result column="field_period" jdbcType="VARCHAR" property="fieldPeriod" />
+    <result column="field_price" jdbcType="DECIMAL" property="fieldPrice" />
+    <result column="field_capacity" jdbcType="INTEGER" property="fieldCapacity" />
+    <result column="field_info" jdbcType="VARCHAR" property="fieldInfo" />
+    <result column="field_state" jdbcType="INTEGER" property="fieldState" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_user_id" jdbcType="INTEGER" property="createUserId" />
+    <result column="create_user_name" property="createUserName"/>
+  </resultMap>
+
+  <!-- 数据库所有字段 -->
+  <sql id="Base_Column_List">
+    field_id, field_road, field_grade, field_session, field_period, field_price, field_capacity, 
+    field_info, field_state, create_time, create_user_id
+  </sql>
+
+  <sql id="allColumn">
+    SELECT field_id,
+           field_road,
+           field_grade,
+           field_session,
+           field_period,
+           field_price,
+           field_capacity,
+           field_info,
+           field_state,
+           f1.create_time,
+           create_user_id,
+           u1.user_name as create_user_name
+    FROM
+      ski_field f1
+    LEFT JOIN
+      sys_user u1
+    ON
+      f1.create_user_id = u1.user_id
+  </sql>
+
+  <!-- 根据条件查询场地信息 -->
+  <select id="queryFieldInfo" resultMap="BaseResultMap">
+        <include refid="allColumn"/>
+        <where>
+          <if test="fieldSession != null and fieldSession !=''">
+             and field_session = #{fieldSession}
+          </if>
+          <if test="fieldPeriod != null and fieldPeriod !=''">
+            and field_period = #{fieldPeriod}
+          </if>
+          <if test="fieldState != null">
+            and field_state = #{fieldState}
+          </if>
+        </where>
+        ORDER BY f1.create_time DESC
+  </select>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from ski_field
+    where field_id = #{fieldId,jdbcType=INTEGER}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from ski_field
+    where field_id = #{fieldId,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="com.fish.business.domain.Field">
+    insert into ski_field (field_id, field_road, field_grade, 
+      field_session, field_period, field_price, 
+      field_capacity, field_info, field_state, 
+      create_time, create_user_id)
+    values (#{fieldId,jdbcType=INTEGER}, #{fieldRoad,jdbcType=VARCHAR}, #{fieldGrade,jdbcType=VARCHAR}, 
+      #{fieldSession,jdbcType=VARCHAR}, #{fieldPeriod,jdbcType=VARCHAR}, #{fieldPrice,jdbcType=DECIMAL}, 
+      #{fieldCapacity,jdbcType=INTEGER}, #{fieldInfo,jdbcType=VARCHAR}, #{fieldState,jdbcType=INTEGER}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{createUserId,jdbcType=INTEGER})
+  </insert>
+
+  <insert id="insertSelective" parameterType="com.fish.business.domain.Field">
+    insert into ski_field
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="fieldId != null">
+        field_id,
+      </if>
+      <if test="fieldRoad != null">
+        field_road,
+      </if>
+      <if test="fieldGrade != null">
+        field_grade,
+      </if>
+      <if test="fieldSession != null">
+        field_session,
+      </if>
+      <if test="fieldPeriod != null">
+        field_period,
+      </if>
+      <if test="fieldPrice != null">
+        field_price,
+      </if>
+      <if test="fieldCapacity != null">
+        field_capacity,
+      </if>
+      <if test="fieldInfo != null">
+        field_info,
+      </if>
+      <if test="fieldState != null">
+        field_state,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="createUserId != null">
+        create_user_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="fieldId != null">
+        #{fieldId,jdbcType=INTEGER},
+      </if>
+      <if test="fieldRoad != null">
+        #{fieldRoad,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldGrade != null">
+        #{fieldGrade,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldSession != null">
+        #{fieldSession,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldPeriod != null">
+        #{fieldPeriod,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldPrice != null">
+        #{fieldPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="fieldCapacity != null">
+        #{fieldCapacity,jdbcType=INTEGER},
+      </if>
+      <if test="fieldInfo != null">
+        #{fieldInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldState != null">
+        #{fieldState,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null">
+        #{createUserId,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.fish.business.domain.Field">
+    update ski_field
+    <set>
+      <if test="fieldRoad != null">
+        field_road = #{fieldRoad,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldGrade != null">
+        field_grade = #{fieldGrade,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldSession != null">
+        field_session = #{fieldSession,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldPeriod != null">
+        field_period = #{fieldPeriod,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldPrice != null">
+        field_price = #{fieldPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="fieldCapacity != null">
+        field_capacity = #{fieldCapacity,jdbcType=INTEGER},
+      </if>
+      <if test="fieldInfo != null">
+        field_info = #{fieldInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldState != null">
+        field_state = #{fieldState,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null">
+        create_user_id = #{createUserId,jdbcType=INTEGER},
+      </if>
+    </set>
+    where field_id = #{fieldId,jdbcType=INTEGER}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.fish.business.domain.Field">
+    update ski_field
+    set field_road = #{fieldRoad,jdbcType=VARCHAR},
+      field_grade = #{fieldGrade,jdbcType=VARCHAR},
+      field_session = #{fieldSession,jdbcType=VARCHAR},
+      field_period = #{fieldPeriod,jdbcType=VARCHAR},
+      field_price = #{fieldPrice,jdbcType=DECIMAL},
+      field_capacity = #{fieldCapacity,jdbcType=INTEGER},
+      field_info = #{fieldInfo,jdbcType=VARCHAR},
+      field_state = #{fieldState,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      create_user_id = #{createUserId,jdbcType=INTEGER}
+    where field_id = #{fieldId,jdbcType=INTEGER}
+  </update>
+
+</mapper>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+			    http://www.springframework.org/schema/beans/spring-beans.xsd
+			    http://www.springframework.org/schema/context
+			    http://www.springframework.org/schema/context/spring-context.xsd
+			    http://www.springframework.org/schema/task
+			    http://www.springframework.org/schema/task/spring-task.xsd
+			    http://www.springframework.org/schema/aop
+			    http://www.springframework.org/schema/aop/spring-aop.xsd
+			    http://www.springframework.org/schema/tx
+			    http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+        <!-- 开启注解扫描 -->
+        <context:component-scan base-package="com.fish">
+            <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        </context:component-scan>
+
+        <!-- Dao配置开始 -->
+            <!-- 引入db.properties -->
+            <context:property-placeholder location="classpath:db.properties" system-properties-mode="FALLBACK"/>
+
+            <!-- 使用连接池 -->
+            <bean id="dataSourceHikari" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+                <property name="driverClassName" value="${driverClassName}"/>
+                <property name="jdbcUrl" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+                <!-- 默认自动提交连接池 -->
+                <property name="autoCommit" value="true"/>
+                <!-- 等待连接池分配的最大时长(毫秒) -->
+                <property name="connectionTimeout" value="30000"/>
+                <!-- 允许连接在连接池中闲置的最长时间(毫秒) -->
+                <property name="idleTimeout" value="60000"/>
+                <!-- 最小空闲时连接池数量 -->
+                <property name="minimumIdle" value="5"/>
+                <!-- 最大连接池数量 -->
+                <property name="maximumPoolSize" value="10"/>
+                <!-- 连接池中连接的最大生存期(毫秒) -->
+                <property name="maxLifetime" value="600000"/>
+            </bean>
+
+            <!-- 配置SqlSessionFactory工厂对象 -->
+            <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+                <!-- 指定Mybatis全局配置文件的位置 -->
+                <property name="configLocation" value="classpath:mybatis-config.xml"/>
+                <!-- 注入数据源 -->
+                <property name="dataSource" ref="dataSourceHikari"/>
+                <!-- 指定Mybatis的mapper文件 -->
+                <property name="mapperLocations" value="classpath:mapper/*/*.xml" />
+            </bean>
+
+            <!-- 扫描mapper接口 -->
+            <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+                <!-- 注入mapper所在接口的包 -->
+                <property name="basePackage">
+                    <value>
+                        com.fish.system.dao
+                        com.fish.business.dao
+                        com.fish.statistics.dao
+                    </value>
+                </property>
+                <!-- 注入SqlSessionFactory -->
+                <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+            </bean>
+        <!-- Dao配置结束 -->
+
+
+        <!-- Service配置开始 -->
+            <!-- 配置事务控制 -->
+            <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+                <property name="dataSource" ref="dataSourceHikari"/>
+            </bean>
+
+            <!-- 配置事务的通知 -->
+            <tx:advice id="txAdvice" transaction-manager="transactionManager">
+                <tx:attributes>
+                    <tx:method name="add*" propagation="REQUIRED"/>
+                    <tx:method name="save*" propagation="REQUIRED"/>
+                    <tx:method name="update*" propagation="REQUIRED"/>
+                    <tx:method name="delete*" propagation="REQUIRED"/>
+                    <tx:method name="change*" propagation="REQUIRED"/>
+                    <tx:method name="reset*" propagation="REQUIRED"/>
+                    <tx:method name="insert*" propagation="REQUIRED"/>
+                    <tx:method name="get*" read-only="true"/>
+                    <tx:method name="load*" read-only="true"/>
+                    <tx:method name="*" read-only="true"/>
+                </tx:attributes>
+            </tx:advice>
+            <!-- 配置AOP切入 -->
+            <aop:config>
+                <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.fish.business.service.impl.*.*(..))"/>
+                <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.fish.system.service.impl.*.*(..))"/>
+                <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.fish.statistics.service.impl.*.*(..))"/>
+            </aop:config>
+        <!-- Service配置结束 -->
+</beans>

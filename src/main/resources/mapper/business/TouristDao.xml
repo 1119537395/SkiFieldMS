@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fish.business.dao.TouristDao">
+
+  <!-- 字段映射 -->
+  <resultMap id="BaseResultMap" type="com.fish.business.domain.Tourist">
+    <id column="tourist_id" jdbcType="INTEGER" property="touristId" />
+    <result column="tourist_name" jdbcType="VARCHAR" property="touristName" />
+    <result column="tourist_sex" jdbcType="INTEGER" property="touristSex" />
+    <result column="tourist_phone" jdbcType="VARCHAR" property="touristPhone" />
+    <result column="tourist_login_account" jdbcType="VARCHAR" property="touristLoginAccount" />
+    <result column="tourist_login_password" jdbcType="VARCHAR" property="touristLoginPassword" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_user_id" jdbcType="INTEGER" property="createUserId" />
+    <result column="create_user_name" property="createUserName"/>
+  </resultMap>
+
+  <!-- 所有字段 -->
+  <sql id="Base_Column_List">
+    tourist_id, tourist_name, tourist_sex, tourist_phone, tourist_login_account, tourist_login_password, 
+    create_time, create_user_id
+  </sql>
+
+  <!-- 关联表查询 -->
+  <sql id="allColumn">
+    SELECT tourist_id,
+           tourist_name,
+           tourist_sex,
+           tourist_phone,
+           tourist_login_account,
+           tourist_login_password,
+           t1.create_time,
+           create_user_id,
+           u1.user_name as create_user_name
+    FROM
+      ski_tourist t1
+    LEFT JOIN
+      sys_user u1
+    ON  t1.create_user_id = u1.user_id
+  </sql>
+
+  <!-- 查询所有游客 -->
+  <select id="queryTouristInfo" resultMap="BaseResultMap">
+    <include refid="allColumn"/>
+    <where>
+      <if test="touristPhone != null and touristPhone != ''">
+        and tourist_phone like concat("%",#{touristPhone},"%")
+      </if>
+      <if test = "touristLoginAccount != null and touristLoginAccount !=''">
+        and tourist_login_account like concat("%",#{touristLoginAccount},"%")
+      </if>
+    </where>
+    ORDER BY t1.create_time DESC
+  </select>
+
+  <!-- 根据手机号查询游客ID -->
+  <select id="queryTouristInfoByPhone" resultMap="BaseResultMap" parameterType="string">
+    select <include refid="Base_Column_List"/> from ski_tourist where tourist_phone = #{touristPhone}
+  </select>
+
+  <!-- 游客登录验证 -->
+  <select id="touristLogin" resultMap="BaseResultMap">
+    select
+        <include refid="Base_Column_List"/>
+    from
+        ski_tourist
+    where
+        tourist_login_account = #{touristLoginAccount} and tourist_login_password = #{touristLoginPassword}
+  </select>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from ski_tourist
+    where tourist_id = #{touristId,jdbcType=INTEGER}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from ski_tourist
+    where tourist_id = #{touristId,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="com.fish.business.domain.Tourist">
+    insert into ski_tourist (tourist_id, tourist_name, tourist_sex, 
+      tourist_phone, tourist_login_account, tourist_login_password, 
+      create_time, create_user_id)
+    values (#{touristId,jdbcType=INTEGER}, #{touristName,jdbcType=VARCHAR}, #{touristSex,jdbcType=INTEGER}, 
+      #{touristPhone,jdbcType=VARCHAR}, #{touristLoginAccount,jdbcType=VARCHAR}, #{touristLoginPassword,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{createUserId,jdbcType=INTEGER})
+  </insert>
+
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="touristId" parameterType="com.fish.business.domain.Tourist">
+    insert into ski_tourist
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="touristId != null">
+        tourist_id,
+      </if>
+      <if test="touristName != null">
+        tourist_name,
+      </if>
+      <if test="touristSex != null">
+        tourist_sex,
+      </if>
+      <if test="touristPhone != null">
+        tourist_phone,
+      </if>
+      <if test="touristLoginAccount != null">
+        tourist_login_account,
+      </if>
+      <if test="touristLoginPassword != null">
+        tourist_login_password,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="createUserId != null">
+        create_user_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="touristId != null">
+        #{touristId,jdbcType=INTEGER},
+      </if>
+      <if test="touristName != null">
+        #{touristName,jdbcType=VARCHAR},
+      </if>
+      <if test="touristSex != null">
+        #{touristSex,jdbcType=INTEGER},
+      </if>
+      <if test="touristPhone != null">
+        #{touristPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="touristLoginAccount != null">
+        #{touristLoginAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="touristLoginPassword != null">
+        #{touristLoginPassword,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null">
+        #{createUserId,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.fish.business.domain.Tourist">
+    update ski_tourist
+    <set>
+      <if test="touristName != null">
+        tourist_name = #{touristName,jdbcType=VARCHAR},
+      </if>
+      <if test="touristSex != null">
+        tourist_sex = #{touristSex,jdbcType=INTEGER},
+      </if>
+      <if test="touristPhone != null">
+        tourist_phone = #{touristPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="touristLoginAccount != null">
+        tourist_login_account = #{touristLoginAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="touristLoginPassword != null">
+        tourist_login_password = #{touristLoginPassword,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null">
+        create_user_id = #{createUserId,jdbcType=INTEGER},
+      </if>
+    </set>
+    where tourist_id = #{touristId,jdbcType=INTEGER}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.fish.business.domain.Tourist">
+    update ski_tourist
+    set tourist_name = #{touristName,jdbcType=VARCHAR},
+      tourist_sex = #{touristSex,jdbcType=INTEGER},
+      tourist_phone = #{touristPhone,jdbcType=VARCHAR},
+      tourist_login_account = #{touristLoginAccount,jdbcType=VARCHAR},
+      tourist_login_password = #{touristLoginPassword,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      create_user_id = #{createUserId,jdbcType=INTEGER}
+    where tourist_id = #{touristId,jdbcType=INTEGER}
+  </update>
+</mapper>

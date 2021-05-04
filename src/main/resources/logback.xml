@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 2分钟扫描一次该配置文件是否有更改 -->
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+
+    <!-- 声明一个变量, 代表日志文件的根目录 -->
+    <property name="LOG_HOME"  value="D:/Java/ideaWorkSpace/log/DigitalMediaMIS/"/>
+    <!-- 输出到控制台 -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 日志输出编码 -->
+        <encoding>UTF-8</encoding>
+        <encoder>
+            <!--打印格式
+            %d 日期 24小时制:分:秒.毫秒数
+            %p 日志级别优先级
+            %c 打印日志的全类名
+            %t 线程名
+            %m message, 打印的信息
+            %n 换行
+            -->
+            <pattern>[%d{HH:mm:ss.SSS}][%p][%c{40}][%t] %m%n</pattern>
+        </encoder>
+        <!--
+        处理日志级别,  ThresholdFilter处理大于等于level标签声明的级别
+        onMatch=accept 符合上述所说级别, 本例大于等于DEBUG级别
+        onMismatch=deny 不符合拒绝不输出, 本例小于DEBUG级别
+        -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- 输出到文件, 日志级别对应info级别(只能info级别日志被输出) -->
+    <appender name="info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_HOME}/info.log</File>
+        <!-- 将日志按时间打包, 内容追加到文件后, 最大保留最近10天的日志记录 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/info.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <append>true</append>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>[%d{HH:mm:ss.SSS}][%p][%c{40}][%t] %m%n</pattern>
+        </encoder>
+        <!-- 处理INFO, 不匹配直接拒接, LevelFilter只处理与level标签相同的级别 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- 输出到文件, 日志级别对应ERROR级别(只能ERROR级别日志被输出) -->
+    <appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_HOME}/error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/error.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <append>true</append>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>[%d{HH:mm:ss.SSS}][%p][%c{40}][%t] %m%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- Mybatis SQL日志 -->
+    <logger name="com.fish.system.dao" level="DEBUG" additivity="false">
+        <appender-ref ref="console" />
+    </logger>
+
+    <!-- 整个项目 log 日志 -->
+    <logger name="com.fish" level="DEBUG" additivity="false">
+        <appender-ref ref="error" />
+        <appender-ref ref="info" />
+        <appender-ref ref="console"/>
+    </logger>
+
+    <!--处理<logger>未处理的日志, 比如项目所引用别的框架的日志 -->
+    <root level="DEBUG">
+        <appender-ref ref="console"/>
+        <appender-ref ref="error"/>
+        <appender-ref ref="info"/>
+    </root>
+
+</configuration>
